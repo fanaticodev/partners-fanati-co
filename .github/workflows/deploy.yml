@@ -14,9 +14,9 @@ jobs:
     - name: Deploy to Fremont2 Server
       uses: appleboy/ssh-action@v0.1.7
       with:
-        host: 185.34.201.34
-        username: sites
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        host: ${{ secrets.FREMONT2_HOST }}
+        username: ${{ secrets.FREMONT2_USER }}
+        key: ${{ secrets.FREMONT2_SSH_KEY }}
         port: 22
         script: |
           echo "Starting deployment of partners.fanati.co..."
