@@ -1,0 +1,60 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy to Fremont2 Server
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: 185.34.201.34
+        username: sites
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          echo "Starting deployment of partners.fanati.co..."
+
+          # Navigate to application directory
+          cd /home/sebastian/sites/partners.fanati.co
+
+          # Pull latest code
+          git pull origin main
+
+          # Install/update composer dependencies
+          docker exec partners_app composer install --no-dev --optimize-autoloader
+
+          # Run database migrations
+          docker exec partners_app php artisan migrate --force
+
+          # Clear and cache configs
+          docker exec partners_app php artisan config:cache
+          docker exec partners_app php artisan route:cache
+          docker exec partners_app php artisan view:cache
+
+          # Restart the container to apply changes
+          cd /home/sebastian/sites
+          docker-compose restart partners_app
+
+          # Health check
+          sleep 10
+          curl -f http://localhost:8080/health || exit 1
+
+          echo "Deployment completed successfully!"
+
+  test:
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+    - name: Health Check
+      run: |
+        sleep 30
+        curl -f https://partners.fanati.co || exit 1
+        echo "Production site is responding correctly"

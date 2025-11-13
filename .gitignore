@@ -1,0 +1,87 @@
+# Laravel .gitignore
+
+# Application
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# IDE
+/.idea
+/.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Laravel Mix
+/public/css/app.css
+/public/js/app.js
+/public/mix-manifest.json
+
+# Laravel Telescope
+/public/vendor/telescope
+
+# Laravel Horizon
+/public/vendor/horizon
+
+# Logs
+/storage/logs/*
+!/storage/logs/.gitkeep
+
+# Cache
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+
+# Testing
+.phpunit.cache
+/coverage
+/.coverage
+/.phpunit.cache
+
+# Database
+*.sqlite
+*.sqlite-journal
+
+# Backup files
+*.backup
+*.bak
+*.tmp
+
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Laravel specific for HybridMLM
+/public/uploads/
+/storage/app/public/
+/storage/debugbar/
