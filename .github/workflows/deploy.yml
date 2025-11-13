@@ -56,7 +56,10 @@ jobs:
           echo "🔨 Rebuilding Docker image..."
           ssh $FREMONT2_USER@$FREMONT2_HOST "cd /home/sebastian/sites/partners.fanati.co && docker-compose build partners_app"
 
-          echo "🔄 Restarting container..."
+          echo "🛑 Stopping old container..."
+          ssh $FREMONT2_USER@$FREMONT2_HOST "cd /home/sebastian/sites/partners.fanati.co && docker-compose down partners_app || true"
+
+          echo "🔄 Starting new container..."
           ssh $FREMONT2_USER@$FREMONT2_HOST "cd /home/sebastian/sites/partners.fanati.co && docker-compose up -d partners_app"
 
           echo "⏳ Waiting for container to be ready..."
