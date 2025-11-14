@@ -62,8 +62,8 @@ jobs:
           echo "🧹 Cleaning up Docker networks and orphaned resources..."
           ssh $FREMONT2_USER@$FREMONT2_HOST "docker network prune -f || true"
 
-          echo "🔍 Running port cleanup script for 8083..."
-          ssh $FREMONT2_USER@$FREMONT2_HOST "chmod +x /home/sebastian/scripts/cleanup-docker-port.sh && /home/sebastian/scripts/cleanup-docker-port.sh 8083"
+          echo "🔍 Running port cleanup script for 8084..."
+          ssh $FREMONT2_USER@$FREMONT2_HOST "chmod +x /home/sebastian/scripts/cleanup-docker-port.sh && /home/sebastian/scripts/cleanup-docker-port.sh 8084"
 
           echo "⏳ Waiting for cleanup to complete..."
           sleep 5
