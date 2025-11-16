@@ -42,10 +42,12 @@ jobs:
             --exclude='vendor' \
             --exclude='node_modules' \
             --exclude='hybridmlm' \
+            --exclude='public/uploads' \
             --exclude='storage/logs/*' \
             --exclude='storage/framework/cache/*' \
             --exclude='storage/framework/sessions/*' \
             --exclude='storage/framework/views/*' \
+            --no-perms --no-owner --no-group \
             /home/sebastian/git-repos/partners-fanati-co/ \
             /home/sebastian/sites/partners.fanati.co/"
 
