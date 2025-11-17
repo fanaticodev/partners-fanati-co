@@ -39,3 +39,9 @@ requirements:
 1.2. Hybrid MLM accessible at partners.fanati.co:port or partners.fanati.co/legacy
 
 2. proceed to create the Monorepo for Infinite and Hybrid MLM using https://github.com/fanaticodev/partners-fanati-co
+
+
+
+
+2. Local Development can be accessed via localhost addresses as fremont2 is a server. use sandbox.partners.fanati.co for developing and testing.
+3. provide path for sandbox.partners.fanati.co for nginx configuration
