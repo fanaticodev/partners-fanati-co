@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Infinite MLM Software (Primary)
+  # ============================================
+  infinite-mlm:
+    build: ./infinite-mlm
+    container_name: infinite-mlm
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8085:80"
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+    volumes:
+      - ./infinite-mlm/src:/var/www/html
+      - infinite-storage:/var/www/html/storage
+      - infinite-cache:/var/www/html/bootstrap/cache
+    depends_on:
+      - infinite-mlm-db
+    networks:
+      - partners-network
+      - web-network
+
+  infinite-mlm-db:
+    image: mariadb:10.11
+    container_name: infinite-mlm-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${INFINITE_DB_ROOT_PASSWORD:-rootpass2024}
+      - MYSQL_DATABASE=infinite_mlm
+      - MYSQL_USER=${INFINITE_DB_USER:-infinite_user}
+      - MYSQL_PASSWORD=${INFINITE_DB_PASSWORD:-infinitepass2024}
+    volumes:
+      - infinite-db-data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3308:3306"
+    networks:
+      - partners-network
+
+  # ============================================
+  # HybridMLM (Legacy)
+  # ============================================
+  hybrid-mlm:
+    build: ./hybrid-mlm
+    container_name: hybrid-mlm
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8086:80"
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+    volumes:
+      - ./hybrid-mlm/public_html:/var/www/html
+      - hybrid-storage:/var/www/html/storage
+    depends_on:
+      - hybrid-mlm-db
+    networks:
+      - partners-network
+      - web-network
+
+  hybrid-mlm-db:
+    image: mariadb:10.11
+    container_name: hybrid-mlm-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${HYBRID_DB_ROOT_PASSWORD:-rootpass2024}
+      - MYSQL_DATABASE=hybrid_mlm
+      - MYSQL_USER=${HYBRID_DB_USER:-hybrid_user}
+      - MYSQL_PASSWORD=${HYBRID_DB_PASSWORD:-hybridpass2024}
+    volumes:
+      - hybrid-db-data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3309:3306"
+    networks:
+      - partners-network
+
+  # ============================================
+  # Nginx Reverse Proxy
+  # ============================================
+  nginx-router:
+    image: nginx:alpine
+    container_name: partners-nginx
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - infinite-mlm
+      - hybrid-mlm
+    networks:
+      - partners-network
+      - web-network
+
+  # ============================================
+  # Redis Cache (Shared)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: partners-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - partners-network
+
+volumes:
+  infinite-db-data:
+    driver: local
+  infinite-storage:
+    driver: local
+  infinite-cache:
+    driver: local
+  hybrid-db-data:
+    driver: local
+  hybrid-storage:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  partners-network:
+    driver: bridge
+  web-network:
+    external: true

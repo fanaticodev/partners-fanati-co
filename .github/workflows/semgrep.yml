@@ -1,0 +1,73 @@
+name: Semgrep Security Scan
+
+on:
+  pull_request: {}
+  push:
+    branches: ["main", "master", "develop"]
+  schedule:
+    - cron: '30 2 * * 1'  # Weekly on Monday at 2:30 AM UTC
+
+jobs:
+  semgrep:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    container:
+      image: returntocorp/semgrep
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          semgrep ci \
+            --config=auto \
+            --config=p/security-audit \
+            --config=p/owasp-top-ten \
+            --config=p/php \
+            --config=p/sql-injection \
+            --config=p/xss \
+            --json \
+            --output=semgrep-results.json || true
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+      - name: Upload Semgrep results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('semgrep-results.json')) {
+              const results = JSON.parse(fs.readFileSync('semgrep-results.json', 'utf8'));
+              const findings = results.results || [];
+
+              let comment = '## 🔒 Semgrep Security Scan Results\n\n';
+
+              if (findings.length === 0) {
+                comment += '✅ No security issues found!';
+              } else {
+                comment += `Found ${findings.length} potential issue(s):\n\n`;
+                findings.slice(0, 5).forEach((finding, i) => {
+                  comment += `${i + 1}. **${finding.check_id}**\n`;
+                  comment += `   - File: ${finding.path}:${finding.start.line}\n`;
+                  comment += `   - Message: ${finding.extra.message}\n\n`;
+                });
+                if (findings.length > 5) {
+                  comment += `\n... and ${findings.length - 5} more issues.`;
+                }
+              }
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
