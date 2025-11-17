@@ -1,6 +1,19 @@
 # Partners Fanati.co - MLM Platform Monorepo
 
-This monorepo contains two MLM platforms for the Fanatico partner network:
+[![Deploy Status](https://github.com/fanaticodev/partners-fanati-co/actions/workflows/deploy.yml/badge.svg)](https://github.com/fanaticodev/partners-fanati-co/actions)
+[![SSL Certificate](https://img.shields.io/badge/SSL-Valid%20until%20Feb%2015%2C%202026-success)](https://sandbox.partners.fanati.co)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
+
+This monorepo contains two MLM platforms for the Fanatico partner network, providing a modern microservices architecture with full SSL support and containerized deployment.
+
+## 🚀 Current Status
+
+- ✅ **SSL/HTTPS**: Fully configured for sandbox.partners.fanati.co (Valid until Feb 15, 2026)
+- ✅ **Docker Infrastructure**: All containers running successfully
+- ✅ **Health Checks**: Both applications have health monitoring endpoints
+- ✅ **CI/CD Pipeline**: GitHub Actions configured for automated deployment
+- ⏳ **Infinite MLM**: Placeholder ready, awaiting software installation
+- ⏳ **Hybrid MLM**: Legacy system operational with FCO Token module
 
 ## 🏗️ Repository Structure
 
@@ -42,6 +55,24 @@ partners-fanati-co/
   - Legacy member database
   - Historical commission data
 
+## 🌐 Access URLs
+
+### Production Environment
+- **Primary**: https://partners.fanati.co (Infinite MLM)
+- **Legacy**: https://partners.fanati.co/legacy (Hybrid MLM)
+
+### Sandbox Environment (Currently Active)
+- **Primary**: https://sandbox.partners.fanati.co ✅
+- **Legacy**: https://sandbox.partners.fanati.co/legacy ✅
+- **Health Check**: https://sandbox.partners.fanati.co/health ✅
+
+### Local Development
+- **Infinite MLM**: http://localhost:8085
+- **Hybrid MLM**: http://localhost:8086
+- **Nginx Router**: http://localhost:8088
+- **Infinite DB**: localhost:3308
+- **Hybrid DB**: localhost:3309
+
 ## 🐳 Docker Setup
 
 ### Quick Start
@@ -57,9 +88,19 @@ docker-compose up -d
 # View logs
 docker-compose logs -f
 
-# Access applications
-# Infinite MLM: http://localhost:8085
-# HybridMLM: http://localhost:8086
+# Check health status
+curl http://localhost:8085/health.php
+curl http://localhost:8086/health.php
+```
+
+### Sandbox Development
+
+```bash
+# Use the sandbox management script
+./sandbox.sh up        # Start sandbox environment
+./sandbox.sh status    # Check container status
+./sandbox.sh logs      # View logs
+./sandbox.sh down      # Stop sandbox
 ```
 
 ### Individual Application Management
@@ -177,11 +218,19 @@ docker-compose logs hybrid-mlm-db
 
 ## 🔐 Security
 
+### SSL/TLS Configuration
+- ✅ **SSL Certificate**: Valid until February 15, 2026
+- ✅ **Auto-renewal**: Via Let's Encrypt certbot
+- ✅ **HTTPS Redirect**: Automatic HTTP → HTTPS
+- ✅ **Security Headers**: X-Frame-Options, X-XSS-Protection, etc.
+
+### Security Measures
 - Database ports bound to localhost only
-- SSL/TLS via Nginx reverse proxy
+- SSL/TLS termination at Nginx reverse proxy
 - Environment variables for sensitive data
-- Regular security updates via Renovate
-- Database backups to B2 storage
+- Docker network isolation
+- Regular security updates via GitHub Dependabot
+- Automated backups with encryption
 
 ## 📦 CI/CD Pipeline
 

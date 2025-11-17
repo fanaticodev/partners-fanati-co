@@ -1,27 +1,47 @@
 version: '3.8'
 
+# Partners Fanati.co MLM Platform - Docker Orchestration
+# This file orchestrates both Infinite MLM (primary) and HybridMLM (legacy) applications
+# with their respective databases, nginx reverse proxy, and Redis cache.
+#
+# Port Mappings:
+#   - 8085: Infinite MLM (localhost only)
+#   - 8086: Hybrid MLM (localhost only)
+#   - 8088: Nginx Router (localhost only)
+#   - 3308: Infinite MLM Database (localhost only)
+#   - 3309: Hybrid MLM Database (localhost only)
+#
+# Usage:
+#   docker-compose up -d              # Start all services
+#   docker-compose ps                 # Check status
+#   docker-compose logs -f [service]  # View logs
+#   ./sandbox.sh up                   # Use sandbox environment
+
 services:
   # ============================================
   # Infinite MLM Software (Primary)
   # ============================================
+  # Modern MLM platform - awaiting software installation
+  # Access: https://partners.fanati.co (production)
+  #         https://sandbox.partners.fanati.co (sandbox)
   infinite-mlm:
     build: ./infinite-mlm
     container_name: infinite-mlm
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8085:80"
+      - "127.0.0.1:8085:80"  # Localhost access only for security
     environment:
       - APP_ENV=${APP_ENV:-production}
       - APP_DEBUG=${APP_DEBUG:-false}
     volumes:
-      - ./infinite-mlm/src:/var/www/html
-      - infinite-storage:/var/www/html/storage
-      - infinite-cache:/var/www/html/bootstrap/cache
+      - ./infinite-mlm/src:/var/www/html  # Source code mount
+      - infinite-storage:/var/www/html/storage  # Persistent storage
+      - infinite-cache:/var/www/html/bootstrap/cache  # Cache directory
     depends_on:
       - infinite-mlm-db
     networks:
-      - partners-network
-      - web-network
+      - partners-network  # Internal network for service communication
+      - web-network      # External network for nginx proxy
 
   infinite-mlm-db:
     image: mariadb:10.11
@@ -79,51 +99,64 @@ services:
   # ============================================
   # Nginx Reverse Proxy
   # ============================================
+  # Routes traffic between Infinite MLM and Hybrid MLM
+  # Path-based routing: / → Infinite MLM, /legacy → Hybrid MLM
+  # Note: SSL termination happens at the main server nginx, not here
   nginx-router:
     image: nginx:alpine
     container_name: partners-nginx
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8088:80"
+      - "127.0.0.1:8088:80"  # Main server nginx proxies to this port
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Main nginx config
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro          # Site-specific configs
     depends_on:
       - infinite-mlm
       - hybrid-mlm
     networks:
-      - partners-network
-      - web-network
+      - partners-network  # Connects to both MLM applications
+      - web-network      # External network for main server access
 
   # ============================================
   # Redis Cache (Shared)
   # ============================================
+  # Shared Redis instance for session storage and caching
+  # Can be used by both MLM applications for performance
   redis:
     image: redis:7-alpine
     container_name: partners-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes  # Enable persistence
     volumes:
-      - redis-data:/data
+      - redis-data:/data  # Persistent data storage
     networks:
-      - partners-network
+      - partners-network  # Internal network only, no external ports
 
+# ============================================
+# Docker Volumes
+# ============================================
+# Named volumes ensure data persistence across container restarts
+# Data is stored in /var/lib/docker/volumes/ on the host
 volumes:
-  infinite-db-data:
+  infinite-db-data:    # Infinite MLM database files
     driver: local
-  infinite-storage:
+  infinite-storage:    # Infinite MLM application storage (uploads, logs)
     driver: local
-  infinite-cache:
+  infinite-cache:      # Infinite MLM cache files
     driver: local
-  hybrid-db-data:
+  hybrid-db-data:      # Hybrid MLM database files
     driver: local
-  hybrid-storage:
+  hybrid-storage:      # Hybrid MLM application storage
     driver: local
-  redis-data:
+  redis-data:          # Redis persistence file
     driver: local
 
+# ============================================
+# Docker Networks
+# ============================================
 networks:
-  partners-network:
-    driver: bridge
-  web-network:
-    external: true
+  partners-network:    # Internal network for inter-service communication
+    driver: bridge     # Isolated from host network
+  web-network:         # External network for main server nginx proxy
+    external: true     # Must be created manually: docker network create web-network
